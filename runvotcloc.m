@@ -1,7 +1,20 @@
  function runvotcloc(name, lang, trigger, stim_set, num_runs, task_num, use_eyelink, start_run)
 %{ 
-Prompts experimenter for session parameters and executes functional localizer experiment used 
+Prompts experimenter for session parameters and executes functional localizer experiment used
 to define regions in high-level visual cortex selective to faces, places, bodies, and printed characters.
+
+TEMPREAD branch design (pilot):
+  8 categories + blank baseline: RealWords ({lang}_RW1), Faces (face1),
+  Hands (hand), FalseFonts ({lang}_FF1), Scrambled ({lang}_SC1),
+  Objects (object1 = 40 car + 40 instrument), Food (dessert),
+  Limbs (bodylimb1). No consonant strings.
+  8 s blocks of 16 images (300 ms image + 200 ms blank), 9 blocks per
+  category + 2 baseline padding blocks = 83 blocks, 664 s per run
+  (plus the 12 s countdown).
+  1-back task: exactly 2 repeats per category per run (16 per run).
+  Defaults when left out (or passed as []): lang 'ES', stim_set 1,
+  num_runs 2, task_num 1 (1-back). Only stim_set 1 exists for tempread.
+  Example: runvotcloc('s1_t1_sub-01_ses-01', 'ES', 0, 1, 2, 1, 0)
 
 Inputs (optional):
   1) name       -- session-specific identifier string.
@@ -1049,15 +1062,12 @@ if nargin < 1
     end
 end
 
-% session lang
-if nargin < 3
-    lang = [];
-    while isempty(deblank(lang))
-        lang = input('Testing language : ', 's');
-    end
+% session lang (tempread default: ES)
+if nargin < 2 || isempty(lang)
+    lang = 'ES';
 end
 % option to trigger scanner
-if nargin < 3
+if nargin < 3 || isempty(trigger)
     trigger = -1;
     while ~ismember(trigger, 0:1)
         sca
@@ -1065,28 +1075,19 @@ if nargin < 3
     end
 end
 
-% which stimulus set/s to use
-if nargin < 4
-    stim_set = -1;
-    while ~ismember(stim_set, 1:3)
-        stim_set = input('Which stimulus set? (1 = standard, 2 = alternate, 3 = both) : ');
-    end
+% which stimulus set/s to use (tempread only has set 1)
+if nargin < 4 || isempty(stim_set)
+    stim_set = 1;
 end
 
-% number of runs to generate
-if nargin < 5
-    num_runs = -1;
-    while ~ismember(num_runs, 1:24)
-        num_runs = input('How many runs? : ');
-    end
+% number of runs to generate (tempread default: 2)
+if nargin < 5 || isempty(num_runs)
+    num_runs = 2;
 end
 
-% which task to use
-if nargin < 6
-    task_num = -1;
-    while ~ismember(task_num, 1:3)
-        task_num = input('Which task? (1 = 1-back, 2 = 2-back, 3 = oddball) : ');
-    end
+% which task to use (tempread default: 1-back)
+if nargin < 6 || isempty(task_num)
+    task_num = 1;
 end
 if nargin < 7
     use_eyelink = -1;

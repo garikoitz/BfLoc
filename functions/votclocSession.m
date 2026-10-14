@@ -448,7 +448,8 @@ classdef votclocSession
             session.parfiles = cell(1, session.num_runs);
             % list of conditions and plotting colors
             conds = ['Baseline' session.sequence.stim_conds];
-            cols = {[1 1 1] [0 0 1] [0 0 0] [1 0 0] [.8 .8 0] [0 1 0]};
+            % one color per condition: baseline + 8 tempread categories
+            cols = {[1 1 1] [0 0 1] [1 0 0] [1 0 1] [0 0 0] [0 1 1] [.8 .8 0] [0 1 0] [.5 .5 .5]};
             % write information about each block on a separate line
             for rr = 1:session.num_runs
                 block_onsets = session.sequence.block_onsets(:, rr);
@@ -489,7 +490,10 @@ classdef votclocSession
                 % if it is using after the experiment
                 sourcedata_dir = '/bcbl/home/public/Gari/VOTCLOC/main_exp/BIDS/sourcedata';
                 subses = [parts_id{1}  '/' parts_id{2}];
-                fpath = fullfile(sourcedata_dir, subses, session.id, fname);
+                % elsewhere (e.g. pilot laptop) keep the local data folder path
+                if exist(sourcedata_dir, 'dir')
+                    fpath = fullfile(sourcedata_dir, subses, session.id, fname);
+                end
                 disp(fpath);
                 fid = fopen(fpath, 'w');
                 fprintf(fid, 'onset\tduration\ttrial_type\n');
