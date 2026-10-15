@@ -1056,6 +1056,7 @@ Was derived from Anthony Stigliani (astiglia@stanford.edu)
 %}
 
 %% add paths and check inputs
+addpath(fullfile(fileparts(mfilename('fullpath')), 'functions'));
 
 % session name
 if nargin < 1
