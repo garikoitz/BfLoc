@@ -56,6 +56,12 @@ Screen('Preference', 'VisualDebugLevel', 0);
 % matching BfLoc_video: DELL 23" at [0..1920] + projector at [1920..3840].
 screen_num = 0;
 second_screen_rect = [1920, 0, 3840, 1080];
+% single-monitor test computer: desktop too narrow for the projector rect,
+% so use the whole screen instead
+desktop_rect = Screen('Rect', screen_num);
+if desktop_rect(3) < second_screen_rect(3)
+    second_screen_rect = [];
+end
 
 [w, rect] = Screen('OpenWindow', screen_num, 128, second_screen_rect);
 center = rect(3:4) / 2;
