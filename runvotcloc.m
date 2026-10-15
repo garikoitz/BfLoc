@@ -12,6 +12,8 @@ TEMPREAD branch design (pilot):
   category + 2 baseline padding blocks = 83 blocks, 664 s per run
   (plus the 12 s countdown).
   1-back task: exactly 2 repeats per category per run (16 per run).
+  Each category uses a pool of 80 images per session, picked at random
+  when the folder has more (saved in seq.stim_files).
   Defaults when left out (or passed as []): lang 'ES', stim_set 1,
   num_runs 2, task_num 1 (1-back). Only stim_set 1 exists for tempread.
   Example: runvotcloc('s1_t1_sub-01_ses-01', 'ES', 0, 1, 2, 1, 0)

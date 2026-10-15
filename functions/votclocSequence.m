@@ -13,7 +13,7 @@ classdef votclocSequence
         task_num     % task number (1 = 1-back, 2 = 2-back, 3 = oddball)
         block_onsets % block onsets relative to beginning of run (seconds)
         block_conds  % block conditions labels
-        stim_files   % image numbers available in each category folder (filled by make_runs)
+        stim_files   % image numbers in each category's stimulus pool (filled by make_runs)
     end
 
     properties (Constant)
@@ -39,6 +39,7 @@ classdef votclocSequence
         % make_orders needs trials_per_cond to be a multiple of num_conds (8 + baseline = 9)
         trials_per_cond = 9;
         probes_per_cond = 2; % task probes per stimulus category per run
+        stim_pool_size = 80; % images drawn at random from each category folder per session
         task_names = {'1back' '2back' 'oddball'};
         stim_dir = fullfile(fileparts(fileparts(which(mfilename, 'class'))), 'stimuli');
     end
@@ -181,6 +182,13 @@ classdef votclocSequence
             seq.stim_files = struct();
             for cc = 1:length(unique_cats)
                 avail = get_stim_nums(seq, unique_cats{cc});
+                % categories with more images than the pool size use a
+                % random subset, so every category has the same pool
+                if numel(avail) > seq.stim_pool_size
+                    avail = sort(avail(randperm(numel(avail), seq.stim_pool_size)));
+                elseif numel(avail) < seq.stim_pool_size
+                    warning('Only %d images in %s (pool size %d).', numel(avail), unique_cats{cc}, seq.stim_pool_size);
+                end
                 seq.stim_files.(matlab.lang.makeValidName(unique_cats{cc})) = avail;
                 gap = min(seq.stim_per_block - 1, floor(numel(avail) / 2));
                 nums = avail(randperm(numel(avail)));
