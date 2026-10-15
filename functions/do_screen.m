@@ -56,10 +56,15 @@ Screen('Preference', 'VisualDebugLevel', 0);
 % matching BfLoc_video: DELL 23" at [0..1920] + projector at [1920..3840].
 screen_num = 0;
 second_screen_rect = [1920, 0, 3840, 1080];
-% single-monitor test computer: desktop too narrow for the projector rect,
-% so use the whole screen instead
-desktop_rect = Screen('Rect', screen_num);
-if desktop_rect(3) < second_screen_rect(3)
+if ispc
+    % Windows test computer: monitor layout differs (screens can sit left
+    % of the primary), so go full screen on the last PTB screen instead;
+    % with an external monitor that is usually the external one
+    screen_num = max(Screen('Screens'));
+    second_screen_rect = [];
+elseif Screen('Rect', screen_num) * [0; 0; 1; 0] < second_screen_rect(3)
+    % single-monitor test computer: desktop too narrow for the projector
+    % rect, so use the whole screen instead
     second_screen_rect = [];
 end
 
