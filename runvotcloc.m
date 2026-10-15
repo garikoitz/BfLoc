@@ -1148,7 +1148,7 @@ for rr = start_run:num_runs
     session = run_exp(session, rr);
     save(fpath, 'session', '-v7.3');
 end
-%write_parfiles(session);
-write_event_tsv(session);
+session = write_parfiles(session);
+session = write_event_tsv(session);
 
 end

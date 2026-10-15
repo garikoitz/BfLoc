@@ -252,12 +252,15 @@ classdef votclocSession
                     [keys, ie] = record_keys(start_time + (ii - 1) * sdc, stim_dur, k);
                     ii_keys = [ii_keys keys]; ii_press = [ii_press ie];
                     % display ISI if necessary
+                    % (flip the blank first so it stays up for the whole ISI)
                     if isi_dur > 0
                         Screen('FillRect', window_ptr, bcol);
                         draw_fixation(window_ptr, center, fcol);
+                        [~, ttoc]=Screen('Flip', window_ptr);
                         [keys, ie] = record_keys(start_time + (ii - 1) * sdc + stim_dur, isi_dur, k);
                         ii_keys = [ii_keys keys]; ii_press = [ii_press ie];
-                        [~, ttoc]=Screen('Flip', window_ptr);
+                    else
+                        ttoc = GetSecs;
                     end
                     resp_keys{ii} = ii_keys;
                     resp_press(ii) = min(ii_press);                    
@@ -326,12 +329,13 @@ classdef votclocSession
                     [keys, ie] = record_keys(start_time + (ii - 1) * sdc, stim_dur, k);
                     ii_keys = [ii_keys keys]; ii_press = [ii_press ie];
                     % display ISI if necessary
+                    % (flip the blank first so it stays up for the whole ISI)
                     if isi_dur > 0
                         Screen('FillRect', window_ptr, bcol);
                         draw_fixation(window_ptr, center, fcol);
+                        Screen('Flip', window_ptr);
                         [keys, ie] = record_keys(start_time + (ii - 1) * sdc + stim_dur, isi_dur, k);
                         ii_keys = [ii_keys keys]; ii_press = [ii_press ie];
-                        Screen('Flip', window_ptr);
                     end
                     resp_keys{ii} = ii_keys;
                     resp_press(ii) = min(ii_press);
@@ -449,7 +453,7 @@ classdef votclocSession
                 for bb = 1:length(block_onsets)
                     fprintf(fid, '%d \t %d \t', block_onsets(bb), block_conds(bb));
                     fprintf(fid, '%s \t', cond_names{bb});
-                    fprintf(fid, '%i %i %i \n', cond_cols{bb});
+                    fprintf(fid, '%g %g %g \n', cond_cols{bb});
                 end
                 fclose(fid);
                 session.parfiles{rr} = fpath;
@@ -473,20 +477,20 @@ classdef votclocSession
                 parts_id=split(session.id, '_');
                 fname = [parts_id{1}  '_' parts_id{2} '_' parts_id{3} '_run-' num2str(rr, '%02d') '_events.tsv'];
                 disp(fname);
+                % tempread: always next to the other session data (not in
+                % the VOTCLOC BIDS sourcedata folder)
                 fpath = fullfile(session.exp_dir, 'data', session.id, fname);
-                % if it is using after the experiment
-                sourcedata_dir = '/bcbl/home/public/Gari/VOTCLOC/main_exp/BIDS/sourcedata';
-                subses = [parts_id{1}  '/' parts_id{2}];
-                % elsewhere (e.g. pilot laptop) keep the local data folder path
-                if exist(sourcedata_dir, 'dir')
-                    fpath = fullfile(sourcedata_dir, subses, session.id, fname);
-                end
                 disp(fpath);
                 fid = fopen(fpath, 'w');
+                if fid < 0
+                    warning('Could not write %s', fpath);
+                    continue
+                end
                 fprintf(fid, 'onset\tduration\ttrial_type\n');
-%                 for bb = 1:length(block_onsets)
-%                     fprintf(fid, '%.2f\t%d\t%s\n', block_onsets(bb), duration, cond_names{bb});
-%                 end
+                % one row per block; onsets are relative to the end of the countdown
+                for bb = 1:length(block_onsets)
+                    fprintf(fid, '%.2f\t%g\t%s\n', block_onsets(bb), duration, conds{block_conds(bb) + 1});
+                end
                 fclose(fid);
                 session.event{rr} = fpath;
             end
