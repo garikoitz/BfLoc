@@ -6,7 +6,7 @@ to define regions in high-level visual cortex selective to faces, places, bodies
 TEMPREAD branch design (pilot):
   8 categories + blank baseline: RealWords ({lang}_RW1), Faces (face1),
   Hands (hand), FalseFonts ({lang}_FF1), Scrambled ({lang}_SC1),
-  Objects (object1 = 40 car + 40 instrument), Food (dessert),
+  Objects (instrument = string instruments), Food (dessert),
   Limbs (bodylimb1). No consonant strings.
   8 s blocks of 16 images (300 ms image + 200 ms blank), 9 blocks per
   category + 2 baseline padding blocks = 83 blocks, 664 s per run

@@ -3,8 +3,7 @@ Functional localizer experiment used to quantify VOTC reading circuit
 
 > **`tempread` branch (pilot design).** 8 categories + blank baseline:
 > RealWords (`ES_RW1`), Faces (`face1`), Hands (`hand`), FalseFonts (`ES_FF1`),
-> Scrambled (`ES_SC1`), Objects (`object1` = 40 car + 40 instrument, built by
-> `scripts/combine_car_and_instrument.py`, mapping in `stimuli/object1_mapping.csv`),
+> Scrambled (`ES_SC1`), Objects (`instrument`, the 144 string-instrument images),
 > Food (`dessert`) and Limbs (`bodylimb1`). 8 s blocks of 16 images
 > (300 ms image + 200 ms blank), 9 blocks per category + 2 baseline padding
 > blocks = 83 blocks / 664 s per run, after a 12 s countdown. 1-back task with
