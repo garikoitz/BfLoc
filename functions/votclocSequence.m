@@ -39,7 +39,7 @@ classdef votclocSequence
         % make_orders needs trials_per_cond to be a multiple of num_conds (8 + baseline = 9)
         trials_per_cond = 9;
         probes_per_cond = 2; % task probes per stimulus category per run
-        stim_pool_size = 80; % images drawn at random from each category folder per session
+        stim_pool_size = 80; % images per category, fixed list in stimuli/stim_pool_80.csv
         task_names = {'1back' '2back' 'oddball'};
         stim_dir = fullfile(fileparts(fileparts(which(mfilename, 'class'))), 'stimuli');
     end
@@ -167,6 +167,37 @@ classdef votclocSequence
             end
         end
 
+        % get the fixed stimulus pool of a category: the images listed for
+        % it in stimuli/stim_pool_80.csv (made by scripts/make_stim_pool.py),
+        % or all images of a folder that is not listed and is small enough
+        function nums = get_stim_pool(seq, cat)
+            pool_csv = fullfile(seq.stim_dir, sprintf('stim_pool_%d.csv', seq.stim_pool_size));
+            listed = {};
+            if exist(pool_csv, 'file')
+                pool = readcell(pool_csv, 'Delimiter', ',', 'NumHeaderLines', 1);
+                listed = pool(strcmp(pool(:, 1), cat), 2);
+            end
+            if isempty(listed)
+                nums = get_stim_nums(seq, cat);
+                if numel(nums) > seq.stim_pool_size
+                    error(['%s has %d images but no fixed pool in %s. ' ...
+                        'Run scripts/make_stim_pool.py (add %s to CATEGORIES).'], ...
+                        cat, numel(nums), pool_csv, cat);
+                end
+            else
+                missing = listed(~cellfun(@(X) exist(fullfile(seq.stim_dir, cat, X), 'file') == 2, listed));
+                if ~isempty(missing)
+                    error(['%d image(s) listed for %s in %s no longer exist (e.g. %s). ' ...
+                        'Rerun scripts/make_stim_pool.py to rebuild the pool.'], ...
+                        numel(missing), cat, pool_csv, missing{1});
+                end
+                nums = sort(cellfun(@(X) str2double(X(numel(cat) + 2:end - 4)), listed))';
+            end
+            if numel(nums) < seq.stim_pool_size
+                warning('Only %d images in the %s pool (pool size %d).', numel(nums), cat, seq.stim_pool_size);
+            end
+        end
+
         % generate randomized stimulus sequences and insert task probes
         function seq = make_runs(seq)
             % calculate number of images needed from each category
@@ -181,14 +212,8 @@ classdef votclocSequence
             stim_nums = cell(1, length(unique_cats));
             seq.stim_files = struct();
             for cc = 1:length(unique_cats)
-                avail = get_stim_nums(seq, unique_cats{cc});
-                % categories with more images than the pool size use a
-                % random subset, so every category has the same pool
-                if numel(avail) > seq.stim_pool_size
-                    avail = sort(avail(randperm(numel(avail), seq.stim_pool_size)));
-                elseif numel(avail) < seq.stim_pool_size
-                    warning('Only %d images in %s (pool size %d).', numel(avail), unique_cats{cc}, seq.stim_pool_size);
-                end
+                % same fixed pool of images for every participant
+                avail = get_stim_pool(seq, unique_cats{cc});
                 seq.stim_files.(matlab.lang.makeValidName(unique_cats{cc})) = avail;
                 gap = min(seq.stim_per_block - 1, floor(numel(avail) / 2));
                 nums = avail(randperm(numel(avail)));

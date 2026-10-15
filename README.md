@@ -7,10 +7,12 @@ Functional localizer experiment used to quantify VOTC reading circuit
 > Food (`dessert`) and Limbs (`bodylimb1`). 8 s blocks of 16 images
 > (300 ms image + 200 ms blank), 9 blocks per category + 2 baseline padding
 > blocks = 83 blocks / 664 s per run, after a 12 s countdown. 1-back task with
-> exactly 2 repeats per category per run (16 per run). Each session uses a pool
-> of 80 images per category (`stim_pool_size`), picked at random from the
-> `<folder>-N.jpg` files in folders that have more; the pool is saved in the
-> sequence (`seq.stim_files`).
+> exactly 2 repeats per category per run (16 per run). Every participant sees
+> the same fixed pool of 80 images per category, listed in
+> `stimuli/stim_pool_80.csv`. Folders with more than 80 images are subsampled
+> with a fixed seed by `scripts/make_stim_pool.py`. **Rerun that script after
+> adding or deleting images**; the experiment stops with an error if a listed
+> image is missing.
 > Defaults: `lang` ES, `stim_set` 1, 2 runs, 1-back, e.g.
 > `runvotcloc('s1_t1_sub-01_ses-01', 'ES', 0, 1, 2, 1, 0)`.
 > The rest of this README describes the original fLoc/VOTCLOC design.
