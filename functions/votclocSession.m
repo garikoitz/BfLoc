@@ -166,16 +166,17 @@ classdef votclocSession
             [window_ptr, rect, center,screen_num] = do_screen;
             center_x = center(1); center_y = center(2); s = session.stim_size / 2;
             stim_rect = [center_x - s center_y - s center_x + s center_y + s];
-            img_ptrs = [];
-            for ii = 1:length(stim_names)
-                if strcmp(stim_names{ii}, 'baseline')
-                    img_ptrs(ii) = 0;
-                else
-                    cat_dir = stim_names{ii}(1:find(stim_names{ii} == '-') - 1);
-                    img = imread(fullfile(stim_dir, cat_dir, stim_names{ii}));
-                    img_ptrs(ii) = Screen('MakeTexture', window_ptr, img);
+            % one texture per distinct image (repeats share it)
+            [uniq_names, ~, uniq_idxs] = unique(stim_names);
+            uniq_ptrs = zeros(size(uniq_names));
+            for uu = 1:length(uniq_names)
+                if ~strcmp(uniq_names{uu}, 'baseline')
+                    cat_dir = uniq_names{uu}(1:find(uniq_names{uu} == '-') - 1);
+                    img = imread(fullfile(stim_dir, cat_dir, uniq_names{uu}));
+                    uniq_ptrs(uu) = Screen('MakeTexture', window_ptr, img);
                 end
             end
+            img_ptrs = uniq_ptrs(uniq_idxs);
 
 
             %% if use eyelink, initialize eyelink and record things 
@@ -273,21 +274,7 @@ classdef votclocSession
                 Eyelink('Message', 'End of Run%d', run_num);
             %% if don't use_eyelink, it's like before
             elseif session.use_eyelink == 0  
-                % main display loop
-                % setup screen and load all stimuli in run
-                [window_ptr, rect, center,screen_num] = do_screen;
-                center_x = center(1); center_y = center(2); s = session.stim_size / 2;
-                stim_rect = [center_x - s center_y - s center_x + s center_y + s];
-                img_ptrs = [];
-                for ii = 1:length(stim_names)
-                    if strcmp(stim_names{ii}, 'baseline')
-                        img_ptrs(ii) = 0;
-                    else
-                        cat_dir = stim_names{ii}(1:find(stim_names{ii} == '-') - 1);
-                        img = imread(fullfile(stim_dir, cat_dir, stim_names{ii}));
-                        img_ptrs(ii) = Screen('MakeTexture', window_ptr, img);
-                    end
-                end
+                % main display loop (screen and textures were set up above)
                 % start experiment triggering scanner if applicable
                 if session.trigger == 0
                     Screen('FillRect', window_ptr, bcol);
